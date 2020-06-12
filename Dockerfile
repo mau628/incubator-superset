@@ -22,18 +22,19 @@ ARG PY_VER=3.6.9
 FROM python:${PY_VER} AS superset-py
 
 RUN mkdir /app \
-        && apt-get update -y \
-        && apt-get install -y --no-install-recommends \
-            build-essential \
-            default-libmysqlclient-dev \
-            libpq-dev \
-        && rm -rf /var/lib/apt/lists/*
+    && apt-get update -y \
+    && apt-get install -y --no-install-recommends \
+    build-essential \
+    default-libmysqlclient-dev \
+    libpq-dev \
+    freetds-dev \
+    && rm -rf /var/lib/apt/lists/*
 
 # First, we just wanna install requirements, which will allow us to utilize the cache
 # in order to only build if and only if requirements change
 COPY ./requirements.txt /app/
 RUN cd /app \
-        && pip install --no-cache -r requirements.txt
+    && pip install --no-cache -r requirements.txt
 
 
 ######################################################################
@@ -50,15 +51,15 @@ RUN mkdir -p /app/superset/assets
 COPY ./docker/frontend-mem-nag.sh /
 COPY ./superset-frontend/package* /app/superset-frontend/
 RUN /frontend-mem-nag.sh \
-        && cd /app/superset-frontend \
-        && npm ci
+    && cd /app/superset-frontend \
+    && npm ci
 
 # Next, copy in the rest and let webpack do its thing
 COPY ./superset-frontend /app/superset-frontend
 # This is BY FAR the most expensive step (thanks Terser!)
 RUN cd /app/superset-frontend \
-        && npm run ${BUILD_CMD} \
-        && rm -rf node_modules
+    && npm run ${BUILD_CMD} \
+    && rm -rf node_modules
 
 
 ######################################################################
@@ -76,13 +77,13 @@ ENV LANG=C.UTF-8 \
     SUPERSET_PORT=8080
 
 RUN useradd --user-group --no-create-home --no-log-init --shell /bin/bash superset \
-        && mkdir -p ${SUPERSET_HOME} ${PYTHONPATH} \
-        && apt-get update -y \
-        && apt-get install -y --no-install-recommends \
-            build-essential \
-            default-libmysqlclient-dev \
-            libpq-dev \
-        && rm -rf /var/lib/apt/lists/*
+    && mkdir -p ${SUPERSET_HOME} ${PYTHONPATH} \
+    && apt-get update -y \
+    && apt-get install -y --no-install-recommends \
+    build-essential \
+    default-libmysqlclient-dev \
+    libpq-dev \
+    && rm -rf /var/lib/apt/lists/*
 
 COPY --from=superset-py /usr/local/lib/python3.6/site-packages/ /usr/local/lib/python3.6/site-packages/
 # Copying site-packages doesn't move the CLIs, so let's copy them one by one
@@ -94,8 +95,8 @@ COPY --from=superset-node /app/superset-frontend /app/superset-frontend
 COPY superset /app/superset
 COPY setup.py MANIFEST.in README.md /app/
 RUN cd /app \
-        && chown -R superset:superset * \
-        && pip install -e .
+    && chown -R superset:superset * \
+    && pip install -e .
 
 COPY ./docker/docker-entrypoint.sh /usr/bin/
 
