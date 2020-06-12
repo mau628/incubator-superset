@@ -20,6 +20,10 @@
 ######################################################################
 FROM preset/superset:dev
 
+RUN apt-get update -y \
+    && apt-get install -y --no-install-recommends \
+    freetds-dev \
+
 COPY ./requirements* ./docker/requirements* /app/
 
 USER root
