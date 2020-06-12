@@ -124,7 +124,7 @@ setup(
         "dremio": ["sqlalchemy_dremio>=1.1.0"],
         "cockroachdb": ["cockroachdb==0.3.3"],
         "thumbnails": ["Pillow>=7.0.0, <8.0.0"],
-        "mssql": ["pymssql==2.1.1"],
+        "mssql": ["pymssql==2.1.4"],
     },
     python_requires="~=3.6",
     author="Apache Software Foundation",
